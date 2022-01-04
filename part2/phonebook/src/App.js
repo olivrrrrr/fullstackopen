@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from "axios"
 import personService from './services/personService'
-
+import './App.css'
 
 const Filter = ({filter, handleFilterInput}) => {
 return (<div>
@@ -28,23 +28,36 @@ const PersonForm = ({addPerson, newName, handleInput, number, handleNumberInput,
 }
 
 const Person = ({ handleDeletePerson, person}) =>{
-  
+
   return(<p>{person.name} {person.number}<button onClick={handleDeletePerson}>delete</button></p>)
+}
+
+const Notification = ({message}) =>{
+
+  if(message === null){
+    return null; 
+  } else if(message.includes('removed')){
+    return (
+      <div className="error">
+        {message}
+      </div>
+    )
+  }
+  return (
+    <div className="added">
+      {message}
+    </div>
+  )
 
 }
 
-
 const App = () => {
   
-
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number:'0208', id: 1}, 
-    { name: 'Oliver', number:'0208', id: 2}
-  ]) 
-
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('');
   const [number, setNumber] = useState('');
   const [filter, setFilter] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(()=>{
       personService
@@ -60,13 +73,18 @@ const App = () => {
         const personID = Object.values(persons.filter(person=> person.name == newName))[0].id
         const person = persons.find(person => person.id === personID)
         const changedPerson = {...person, number: number}
-    
-          personService
+
+        personService
             .update(personID, changedPerson)
             .then(resp=>{
               setPersons(persons.map(person => person.id !== personID ? person : resp))
               setNewName('')
               setNumber('')
+            }).catch(error=>{
+              setErrorMessage(`Informtion for ${person.name} has already been removed from the server`)
+              setTimeout(()=>{
+                setErrorMessage(null)
+              }, 5000)
             })
         
        }
@@ -83,6 +101,10 @@ const App = () => {
             setPersons(persons.concat(resp));
             setNewName('')
             setNumber('')
+            setErrorMessage(`Added ${resp.name}`)
+            setTimeout(()=>{
+              setErrorMessage(null)
+            }, 5000)
           })
 
     }    
@@ -111,6 +133,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={errorMessage}/>
       <Filter handleFilterInput={handleFilterInput} filter={filter} />
       <h3>Add a new</h3>
       <PersonForm
