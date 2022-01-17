@@ -1,10 +1,10 @@
-const { response } = require('express')
+
+const morgan = require('morgan')
 const express = require('express')
 
 const app = express()
 
 app.use(express.json())
-
 
 let persons = [
     { 
@@ -60,8 +60,9 @@ const randomNumberGenerator = () => {
     return Math.floor(Math.random()*10000)
 }
 
+morgan.token('body', (req, res) => JSON.stringify(req.body));
 
-app.post('/api/persons', (req, res)=>{
+app.post('/api/persons', morgan(':method :url :status :res[content-length] - :response-time :body'), (req, res)=>{
 
     const body = req.body
 
