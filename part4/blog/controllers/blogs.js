@@ -1,18 +1,18 @@
-const notesRouter = require("express").Router();
+const blogsRouter = require("express").Router();
 const { response } = require("express");
 const Blog = require("../models/blog");
 
-notesRouter.get("/", async (request, response) => {
+blogsRouter.get("/", async (request, response) => {
   const blogs = await Blog.find({});
   response.json(blogs);
 });
 
-notesRouter.get("/:id", async (request, response) => {
+blogsRouter.get("/:id", async (request, response) => {
   const blog = await Blog.findById(request.params.id);
   response.json(blog);
 });
 
-notesRouter.delete("/:id", async (request, response, next) => {
+blogsRouter.delete("/:id", async (request, response, next) => {
   try {
     await Blog.findByIdAndDelete(request.params.id);
     response.status(204).end();
@@ -21,7 +21,7 @@ notesRouter.delete("/:id", async (request, response, next) => {
   }
 });
 
-notesRouter.post("/", async (request, response, next) => {
+blogsRouter.post("/", async (request, response, next) => {
   const body = request.body;
 
   const blog = new Blog({
@@ -45,7 +45,7 @@ notesRouter.post("/", async (request, response, next) => {
   }
 });
 
-notesRouter.put("/:id", async (request, response, next) => {
+blogsRouter.put("/:id", async (request, response, next) => {
   const body = request.body;
 
   const newBlog = {
@@ -67,4 +67,4 @@ notesRouter.put("/:id", async (request, response, next) => {
   }
 });
 
-module.exports = notesRouter;
+module.exports = blogsRouter;
