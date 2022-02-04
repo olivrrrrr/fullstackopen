@@ -7,9 +7,18 @@ notesRouter.get("/", async (request, response) => {
   response.json(blogs);
 });
 
-notesRouter.get("api/blogs/:id", async (request, response) => {
+notesRouter.get("/:id", async (request, response) => {
   const blog = await Blog.findById(request.params.id);
   response.json(blog);
+});
+
+notesRouter.delete("/:id", async (request, response, next) => {
+  try {
+    await Blog.findByIdAndDelete(request.params.id);
+    response.status(204).end();
+  } catch (next) {
+    next(exception);
+  }
 });
 
 notesRouter.post("/", async (request, response, next) => {
@@ -21,12 +30,6 @@ notesRouter.post("/", async (request, response, next) => {
     url: body.url,
     likes: body.likes || 0,
   });
-
-  // const blog = blog.save().then((result) => {
-  //   response.status(201).json(result);
-  // });
-
-  // console.log(blog["author"] === undefined);
 
   try {
     if (!(blog["title"] === undefined) || !(blog["url"] === undefined)) {
@@ -42,16 +45,26 @@ notesRouter.post("/", async (request, response, next) => {
   }
 });
 
-// const errorHandler = (error, request, res, next) => {
-//   console.error(error.message);
+notesRouter.put("/:id", async (request, response, next) => {
+  const body = request.body;
 
-//   if (error.name === "CastError") {
-//     return res.status(400).send({ error: "malformatted id" });
-//   }
+  const newBlog = {
+    author: body.author,
+    title: body.title,
+    url: body.url,
+    likes: body.likes || 0,
+  };
 
-//   next(error);
-// };
-
-// app.use(errorHandler);
+  try {
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      request.params.id,
+      newBlog,
+      { new: true }
+    );
+    response.json(updatedBlog.toJSON());
+  } catch (exception) {
+    next(exception);
+  }
+});
 
 module.exports = notesRouter;
