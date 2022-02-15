@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import axios from "axios"
 import personService from './services/personService'
 import './App.css'
 
@@ -36,7 +35,7 @@ const Notification = ({message}) =>{
 
   if(message === null){
     return null; 
-  } else if(message.includes('removed')){
+  } else if(message.includes('removed')|| message.includes('validation') || message.includes('missing')){
     return (
       <div className="error">
         {message}
@@ -67,10 +66,11 @@ const App = () => {
 
   const addPerson = (e) => { 
     e.preventDefault();
+  
     if(persons.map(person => person.name).includes(newName)){
       if(window.confirm(`${newName} is already added to phonebook, replace the old number with a new one ?`)){
         
-        const personID = Object.values(persons.filter(person=> person.name == newName))[0].id
+        const personID = Object.values(persons.filter(person=> person.name === newName))[0].id
         const person = persons.find(person => person.id === personID)
         const changedPerson = {...person, number: number}
 
@@ -106,7 +106,14 @@ const App = () => {
               setErrorMessage(null)
             }, 5000)
           })
-
+          .catch(error =>{
+           // console.log(error.response.data.error)
+            setErrorMessage(`${error.response.data.error}`)
+            setTimeout(() => {
+                setErrorMessage(null)
+              }, 5000)
+              
+          })
     }    
   }
 
@@ -126,7 +133,7 @@ const App = () => {
     if(window.confirm(`Are you sure you want to delete ${name}?`)){
             personService
               .deletePerson(id)
-              .then(resp=>setPersons(persons.filter(person => person.id != id)))
+              .then(resp=>setPersons(persons.filter(person => person.id !== id)))
           }
   }
 
